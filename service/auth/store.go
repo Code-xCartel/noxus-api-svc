@@ -32,8 +32,8 @@ func (s *Store) GetUserByEmail(email string) (*auth.User, error) {
 	return u, nil
 }
 
-func (s *Store) GetUserByID(id int64) (*auth.User, error) {
-	rows, err := s.db.Query("SELECT * FROM users WHERE id = $1", id)
+func (s *Store) GetUserByNoxID(noxId string) (*auth.User, error) {
+	rows, err := s.db.Query("SELECT * FROM users WHERE noxId = $1", noxId)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,8 @@ func (s *Store) GetUserByID(id int64) (*auth.User, error) {
 }
 
 func (s *Store) CreateNewUser(u auth.User) error {
-	if _, err := s.db.Exec("INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
+	if _, err := s.db.Exec("INSERT INTO users (noxId, username, email, password) VALUES ($1, $2, $3, $4)",
+		u.NoxID,
 		u.Username,
 		u.Email,
 		u.Password,
@@ -65,6 +66,7 @@ func scanRowIntoUser(row *sql.Rows) (*auth.User, error) {
 	user := new(auth.User)
 	if err := row.Scan(
 		&user.ID,
+		&user.NoxID,
 		&user.Username,
 		&user.Email,
 		&user.Password,

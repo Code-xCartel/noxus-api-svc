@@ -21,7 +21,7 @@ func (s *APIServer) RunApiServer() error {
 	rootRouter.RegisterRoutes()
 	server := http.Server{
 		Addr:    s.addr,
-		Handler: router,
+		Handler: chain(router),
 	}
 	log.Printf("api svc started %s", s.addr)
 	return server.ListenAndServe()

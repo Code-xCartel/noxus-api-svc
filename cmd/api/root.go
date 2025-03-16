@@ -2,6 +2,8 @@ package _api
 
 import (
 	"database/sql"
+	"github.com/Code-xCartel/noxus-api-svc/service/auth"
+	"github.com/Code-xCartel/noxus-api-svc/service/friends"
 	"net/http"
 )
 
@@ -15,5 +17,6 @@ func NewRootRouter(router *http.ServeMux, store *sql.DB) *Root {
 }
 
 func (r *Root) RegisterRoutes() {
-	// Add routes here
+	auth.Router(r.router, auth.NewAuthStore(r.store))
+	friends.Router(r.router, friends.NewFriendsStore(r.store, auth.NewAuthStore(r.store)))
 }

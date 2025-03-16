@@ -28,6 +28,10 @@ func WriteError(w http.ResponseWriter, status int, err error) {
 	_ = WriteJson(w, status, map[string]string{"error": err.Error()})
 }
 
+func GenericJSON(message string) map[string]interface{} {
+	return map[string]interface{}{"detail": message}
+}
+
 func ParseAndValidate(w http.ResponseWriter, r *http.Request, payload any) error {
 	// get json
 	if err := ParseJson(r, &payload); err != nil {
@@ -59,4 +63,13 @@ func Contains[T comparable](arr []T, match T) bool {
 
 func IsExcludedFromAuth(url string) bool {
 	return Contains(excludedURLS, url)
+}
+
+func FilterArray[T any](ss []T, test func(T) bool) (ret []T) {
+	for _, s := range ss {
+		if test(s) {
+			ret = append(ret, s)
+		}
+	}
+	return
 }

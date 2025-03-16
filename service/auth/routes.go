@@ -25,6 +25,7 @@ func Router(router *http.ServeMux, store *Store) {
 				return
 			}
 			if createErr := store.CreateNewUser(auth.User{
+				NoxID:    GenerateUniqueId(8),
 				Username: payload.Username,
 				Email:    payload.Email,
 				Password: hashedPassword,
@@ -52,12 +53,22 @@ func Router(router *http.ServeMux, store *Store) {
 				utils.WriteError(w, http.StatusUnauthorized, fmt.Errorf("invalid password"))
 				return
 			}
-			newToken, err := CreateJWT(u.ID)
+			newToken, err := CreateJWT(u)
 			if err != nil {
 				utils.WriteError(w, http.StatusInternalServerError, fmt.Errorf("failed to create token: %v", err))
 				return
 			}
-			_ = utils.WriteJson(w, http.StatusOK, map[string]interface{}{"access_token": newToken, "token_type": "bearer", "user": u})
+			userResponse := auth.UserResponse{
+				Username: u.Username,
+				Email:    u.Email,
+				ID:       u.ID,
+				NoxID:    u.NoxID,
+			}
+			_ = utils.WriteJson(w, http.StatusOK, map[string]interface{}{
+				"access_token": newToken,
+				"token_type":   "bearer",
+				"user":         userResponse,
+			})
 			return
 		})
 

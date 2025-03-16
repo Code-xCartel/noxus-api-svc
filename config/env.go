@@ -11,6 +11,7 @@ type Config struct {
 	JWTSecretKey             string
 	JWTExpirationInSeconds   int64
 	RequestMethod            string
+	CharStrings              string
 }
 
 var Envs = initConfig()
@@ -40,5 +41,6 @@ func initConfig() Config {
 		JWTSecretKey:             getEnv("JWT_SECRET", "verySecureRandomKey"),
 		JWTExpirationInSeconds:   getEnvAsInt("JWT_EXPIRATION_IN_SECONDS", 3600*24*7),
 		RequestMethod:            getEnv("REQUEST_METHOD", "Bearer"),
+		CharStrings:              getEnv("CharStrings", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"),
 	}
 }
