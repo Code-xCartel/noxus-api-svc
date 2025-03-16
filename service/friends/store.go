@@ -28,9 +28,19 @@ func NewFriendsStore(db *sql.DB, authStore *auth.Store) *Store {
 }
 
 func (s *Store) GetFriends(id string, status Status) ([]friends.FriendResponse, error) {
-	rows, dbErr := s.db.Query(
-		"SELECT u.noxId, u.username FROM users u JOIN friends f ON (u.noxId = f.friend_id OR u.noxId = f.user_id) WHERE (f.user_id = $1 OR f.friend_id = $1) AND  f.status = $2",
-		id, status)
+	query := `
+		SELECT u.noxId, u.username, f.status 
+		FROM users u 
+		JOIN friends f 
+		ON (u.noxId = f.friend_id OR u.noxId = f.user_id) 
+		WHERE (f.user_id = $1 OR f.friend_id = $1) AND  f.status = $2
+	`
+
+	if status == Blocked {
+		query += `AND f.action_by = $1`
+	}
+
+	rows, dbErr := s.db.Query(query, id, status)
 	if dbErr != nil {
 		return nil, dbErr
 	}
@@ -91,7 +101,7 @@ func (s *Store) ActionOnFriendByNoxId(
 	newStatus Status,
 ) error {
 	_, err := s.db.Exec(
-		"UPDATE friends SET status = $4 WHERE user_id = $1 AND friend_id = $2 AND status = ANY($3)",
+		"UPDATE friends SET status = $4, action_by = $2 WHERE (user_id = $1 AND friend_id = $2 OR user_id = $2 AND friend_id = $1) AND status = ANY($3)",
 		friendId, userId, pq.Array(currentStatus), newStatus,
 	)
 	if err != nil {

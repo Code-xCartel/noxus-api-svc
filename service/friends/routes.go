@@ -76,7 +76,7 @@ func Router(router *http.ServeMux, store *Store) {
 			}
 			fErr := store.ActionOnFriendByNoxId(claims.NoxID, u.NoxID, []Status{Pending}, Accepted)
 			if fErr != nil {
-				utils.WriteError(w, http.StatusInternalServerError, err)
+				utils.WriteError(w, http.StatusInternalServerError, fErr)
 				return
 			}
 			_ = utils.WriteJson(w, http.StatusCreated, utils.GenericJSON("request accepted"))
@@ -121,7 +121,7 @@ func Router(router *http.ServeMux, store *Store) {
 			_ = utils.WriteJson(w, http.StatusCreated, utils.GenericJSON("friend blocked"))
 		})
 
-	router.HandleFunc("PUT /friend/unblock/{noxId}",
+	router.HandleFunc("PUT /friends/unblock/{noxId}",
 		func(w http.ResponseWriter, r *http.Request) {
 			noxId := r.PathValue("noxId")
 			claims, _ := r.Context().Value("claims").(*auth.CustomClaims)
