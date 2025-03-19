@@ -9,6 +9,17 @@ import (
 
 func Router(router *http.ServeMux, store *Store) {
 
+	router.HandleFunc("GET /friends/search/{noxId}",
+		func(w http.ResponseWriter, r *http.Request) {
+			noxId := r.PathValue("noxId")
+			user, err := store.SearchNoxId(noxId)
+			if err != nil {
+				utils.WriteError(w, http.StatusNotFound, err)
+				return
+			}
+			_ = utils.WriteJson(w, http.StatusOK, user)
+		})
+
 	router.HandleFunc("GET /friends",
 		func(w http.ResponseWriter, r *http.Request) {
 			claims, _ := r.Context().Value("claims").(*auth.CustomClaims)

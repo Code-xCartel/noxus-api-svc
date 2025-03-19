@@ -27,6 +27,24 @@ func NewFriendsStore(db *sql.DB, authStore *auth.Store) *Store {
 	return &Store{db, authStore}
 }
 
+func (s *Store) SearchNoxId(id string) (*friends.SearchUserResponse, error) {
+	rows, err := s.db.Query("SELECT u.noxId, u.username FROM users u WHERE u.noxId = $1", id)
+	if err != nil {
+		return nil, err
+	}
+	f := new(friends.SearchUserResponse)
+	for rows.Next() {
+		f, err = scanRowIntoSearchUser(rows)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if f.NoxID == "" {
+		return nil, fmt.Errorf("user not found")
+	}
+	return f, nil
+}
+
 func (s *Store) GetFriends(id string, status Status) ([]friends.FriendResponse, error) {
 	query := `
 		SELECT u.noxId, u.username, f.status 
@@ -123,6 +141,21 @@ func scanRowIntoModel(row *sql.Rows) (*friends.FriendResponse, error) {
 		Username: user.Username,
 		NoxID:    user.NoxID,
 		Status:   user.Status,
+	}
+	return friend, nil
+}
+
+func scanRowIntoSearchUser(row *sql.Rows) (*friends.SearchUserResponse, error) {
+	user := new(friends.SearchUserResponse)
+	if err := row.Scan(
+		&user.NoxID,
+		&user.Username,
+	); err != nil {
+		return nil, err
+	}
+	friend := &friends.SearchUserResponse{
+		Username: user.Username,
+		NoxID:    user.NoxID,
 	}
 	return friend, nil
 }
